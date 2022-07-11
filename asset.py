@@ -4,15 +4,39 @@ class Asset:
     def __init__(self):
         self.tile_sheet=pygame.image.load(os.path.join(IMAGE_PATH,'Stage Tiles.png')).convert_alpha()
         self.mario_sheet=pygame.image.load(os.path.join(IMAGE_PATH,'Mario & Luigi.png')).convert_alpha()
+        self.Enemies_sheet=pygame.image.load(os.path.join(IMAGE_PATH,'Enemies.png')).convert_alpha()
         self.ui_sheet=pygame.image.load(os.path.join(IMAGE_PATH,'HUD & Font.png')).convert_alpha()
         self.get_tile_images()
         self.get_mario_images()
+        self.get_enemy_images()
         self.get_ui_images()
     
     def get_tile_images(self):
-        self.stage_tile={'1':{'ground':[]}}
         tile_size=16,16
+        
+        background=[]
         for y in range(2):
+            for x in range(4):
+                surface=pygame.Surface(tile_size)
+                surface.blit(self.tile_sheet,(0,0),(x*17+647,y*17+18,16,16))
+                surface=pygame.transform.scale(surface,(tile_size[0]*SCALE,tile_size[1]*SCALE))
+                background.append(surface)
+        
+        for y in range(2):
+            for x in range(3):
+                surface=pygame.Surface(tile_size)
+                surface.blit(self.tile_sheet,(0,0),(x*17+698,y*17+69,16,16))
+                surface.set_colorkey('#e0a3d8')
+                surface=pygame.transform.scale(surface,(tile_size[0]*SCALE,tile_size[1]*SCALE))
+                background.append(surface)
+        
+        self.stage_tile={'1':{
+            'ground':[],
+            'background':background[8:]
+            }}
+        self.stage_tile['1']['background'].insert(0,background[0])
+        
+        for y in range(5):
             for x in range(3):
                 surface=pygame.Surface(tile_size)
                 surface.blit(self.tile_sheet,(0,0),(x*17+443,y*17+154,16,16))
@@ -45,6 +69,19 @@ class Asset:
             surface=pygame.transform.scale(surface,(super_mario1_width*SCALE,super_mario1_height*SCALE))
             self.super_mario_images['super_mario'].append(surface)
     
+    def get_enemy_images(self):
+        # https://strategywiki.org/wiki/Super_Mario_Bros._3/Enemies
+        
+        self.enemy_images={'goombas':{'goomba':[]}}
+        
+        for y in range(3):
+            for x in range(3):
+                surface=pygame.Surface((16,16))
+                surface.blit(self.Enemies_sheet,(0,0),(x*16,y*16,16,16))
+                surface.set_colorkey('#4491be')
+                surface=pygame.transform.scale(surface,(16*SCALE,16*SCALE))
+                self.enemy_images['goombas']['goomba'].append(surface)
+    
     def get_ui_images(self):
         temp=[]
         for y in range(3):
@@ -65,3 +102,4 @@ class Asset:
         hud.set_colorkey('#00e08e')
         hud=pygame.transform.scale(hud,(154*SCALE,30*SCALE))
         self.ui_images['hud']=hud
+        self.hud_rect=self.ui_images['hud'].get_rect(topleft=((16*SCALE),12*(16*SCALE)))

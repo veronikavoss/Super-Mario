@@ -1,12 +1,13 @@
 from setting import *
-from asset import *
 
-class Tile(pygame.sprite.Sprite,Asset):
-    def __init__(self,type,pos):
+class Tile(pygame.sprite.Sprite):
+    def __init__(self,image,type,element,pos,index=0):
         pygame.sprite.Sprite.__init__(self)
-        Asset.__init__(self)
-        self.image=self.stage_tile['1']['ground'][int(type)]
+        self.index=index
+        self.image=image['1'][type][int(element)]
         self.rect=self.image.get_rect(topleft=pos)
+        self.stop=False
     
-    def update(self):
-        self.rect.center=pygame.mouse.get_pos()
+    def update(self,speed_x,speed_y):
+        self.rect.x+=speed_x
+        self.rect.y+=speed_y

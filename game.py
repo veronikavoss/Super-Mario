@@ -1,5 +1,6 @@
 from setting import *
 from controller import Controller
+from map import Map
 
 class SuperMario:
     def __init__(self):
