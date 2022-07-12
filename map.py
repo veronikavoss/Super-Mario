@@ -10,7 +10,7 @@ class Map:
         
         # self.stage={'1':{'1':[]}}
         with open(os.path.join(CURRENT_PATH,'map_data.txt'),'r') as r:
-            self.stage={'1':{'1':[list(data.strip()) for data in r.readlines()]}}
+            self.stage={'1':{'1':[data.strip().split(',') for data in r.readlines()]}}
             # for data in r.readlines():
             #     self.stage['1']['1'].append(list(data.strip()))
         #     for i in range(27):

@@ -21,11 +21,12 @@ class Controller(Asset,Map):
         self.enemies=pygame.sprite.Group()
         self.player=pygame.sprite.GroupSingle()
         self.map_tiles=pygame.sprite.GroupSingle(Tile(self.stage_tile,'ground',self.map_element,(0,0)))
-        self.scroll_x=False
         self.scroll_x_speed_edit=0
         self.scroll_y_speed_edit=0
-        self.minus_scroll_x=0
-        self.minus_scroll_y=-15*(16*SCALE)
+        self.minus_scroll_x_edit=0
+        self.minus_scroll_y_edit=-15*(16*SCALE)
+        self.minus_scroll_x_player=0
+        self.minus_scroll_y_player=-15*(16*SCALE)
         self.background()
         self.map_load()
     
@@ -40,10 +41,10 @@ class Controller(Asset,Map):
         i=0
         for row,column in enumerate(self.stage[str(self.level)][str(self.stage_level)]):
             for index,data in enumerate(column):
-                x=index*(16*SCALE)+self.minus_scroll_x
-                y=row*(16*SCALE)+self.minus_scroll_y
+                x=index*(16*SCALE)+self.minus_scroll_x_edit
+                y=row*(16*SCALE)+self.minus_scroll_y_edit
                 # y=row*(16*SCALE)-(16*SCALE*15)
-                if data=='p':
+                if data=='player':
                     self.player.add(Player(self.small_mario_images,self.super_mario_images,(x,y),'super_mario',self.edit_mode))
                 # elif data=='h':
                 #     self.hud_rect=self.ui_images['hud'].get_rect(topleft=(x,y))
@@ -56,9 +57,16 @@ class Controller(Asset,Map):
                     # else:
                     #     self.tiles.add(Tile(self.stage_tile,'background',0,(x,y)))
         with open(os.path.join(CURRENT_PATH,'map_data.txt'),'w') as w:
-            for data in self.stage['1']['1']:
-                w.writelines(data)
-                w.write('\n')
+            for i,map_data in enumerate(self.stage['1']['1']):
+                for j,data in enumerate(map_data):
+                    if j<len(map_data)-1:
+                        w.writelines(data+',')
+                    else:
+                        w.writelines(data)
+                if i<len(self.stage['1']['1'])-1:
+                    w.write('\n')
+                else:
+                    w.write('')
     
     def set_mouse_status(self):
         mouse_input=pygame.mouse.get_pressed()
@@ -69,12 +77,22 @@ class Controller(Asset,Map):
         else:
             self.mouse_status='idle'
     
+    def set_key_input(self):
+        player=self.player.sprite
+        player.game_status=self.edit_mode
+        key_input=pygame.key.get_pressed()
+        if key_input[pygame.K_e] and self.edit_mode=='playing':
+            self.edit_mode='edit'
+            pygame.time.delay(100)
+        elif key_input[pygame.K_e] and self.edit_mode=='edit':
+            self.edit_mode='playing'
+            pygame.time.delay(100)
+    
     def map_edit(self):
-        self.edit_mode=self.player.sprite.game_status
         self.bg_rect.x+=self.scroll_x_speed_edit
         self.bg_rect.y+=self.scroll_y_speed_edit
-        self.minus_scroll_x+=self.scroll_x_speed_edit
-        self.minus_scroll_y+=self.scroll_y_speed_edit
+        self.minus_scroll_x_edit+=self.scroll_x_speed_edit
+        self.minus_scroll_y_edit+=self.scroll_y_speed_edit
         mouse_pos=pygame.mouse.get_pos()
         key_input=pygame.key.get_pressed()
         # mouse_input=pygame.mouse.get_pressed()
@@ -82,8 +100,8 @@ class Controller(Asset,Map):
         
         column,row=(mouse_pos[0]+self.bg_rect.x*-1)//(16*SCALE),(mouse_pos[1]+self.bg_rect.y*-1)//(16*SCALE)
         x,y=((mouse_pos[0]+self.bg_rect.x*-1)//(16*SCALE))*(16*SCALE),((mouse_pos[1]+self.bg_rect.y*-1)//(16*SCALE))*(16*SCALE)
-        print(x-self.minus_scroll_x,y,row,column,self.minus_scroll_y)
-        self.map_tiles.sprite.rect.topleft=(x+self.minus_scroll_x,y+self.minus_scroll_y)
+        print(x-self.minus_scroll_x_edit,y,row,column,self.minus_scroll_x_edit,self.minus_scroll_y_edit)
+        self.map_tiles.sprite.rect.topleft=(x+self.minus_scroll_x_edit,y+self.minus_scroll_y_edit)
         
         if key_input[pygame.K_LEFT] and self.bg_rect.left<0:
             self.scroll_x_speed_edit=4
@@ -128,9 +146,9 @@ class Controller(Asset,Map):
                 self.map_tiles.add(Player(self.small_mario_images,self.super_mario_images,(mouse_pos),self.map_element,self.edit_mode))
         
         if self.mouse_status=='up':
-            self.set_mouse_input(row,column)
+            self.map_edit_mouse_input(row,column)
     
-    def set_mouse_input(self,row,column):
+    def map_edit_mouse_input(self,row,column):
         if self.stage[str(self.level)][str(self.stage_level)][row][column]=='_':
             self.stage[str(self.level)][str(self.stage_level)][row][column]=self.map_element
         else:
@@ -140,12 +158,12 @@ class Controller(Asset,Map):
     
     def set_scroll_x(self):
         player=self.player.sprite
+        self.minus_scroll_x_player+=player.scroll_x_speed
+        print(self.minus_scroll_x_player)
         if player.rect.right>SCREEN_WIDTH/2+player.rect.w and player.dx>0:
-            self.scroll_x=True
             player.move_speed=0
             player.scroll_x_speed=-4
-        elif not self.scroll_x and player.rect.left<SCREEN_WIDTH/2-player.rect.w and player.dx<0:
-            self.scroll_x=True
+        elif self.minus_scroll_x_player<0 and player.rect.left<SCREEN_WIDTH/2-player.rect.w and player.dx<0:
             player.move_speed=0
             player.scroll_x_speed=4
         else:
@@ -181,28 +199,24 @@ class Controller(Asset,Map):
                     player.dy=0
                     player.rect.bottom=tile.rect.top
                     player.on_ground=True
-            if tile.index==1:
-                if tile.rect.left>-5:
-                    self.scroll_x=True
-                else:
-                    self.scroll_x=False
     
     def run(self):
-        print(self.minus_scroll_x)
-        if self.player.sprite.game_status=='playing':
+        self.set_key_input()
+        # print(self.minus_scroll_x_edit)
+        if self.edit_mode=='playing':
             self.screen.fill('#aff9f0')
-            self.set_scroll_x()
-            self.set_scroll_y()
             self.collide_horizon()
             self.collide_vertical()
             self.tiles.update(self.player.sprite.scroll_x_speed,self.player.sprite.scroll_y_speed)
             self.tiles.draw(self.screen)
+            self.set_scroll_x()
+            self.set_scroll_y()
             self.enemies.update(self.player.sprite.scroll_x_speed,self.tiles,self.player.sprite)
             self.enemies.draw(self.screen)
             self.player.update()
             self.player.draw(self.screen)
             self.screen.blit(self.ui_images['hud'],self.hud_rect)
-        elif self.player.sprite.game_status=='edit':
+        elif self.edit_mode=='edit':
             self.screen.fill('black')
             self.screen.blit(self.bg,self.bg_rect)
             self.set_mouse_status()

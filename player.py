@@ -50,12 +50,12 @@ class Player(pygame.sprite.Sprite):
     def set_key_input(self):
         key_input=pygame.key.get_pressed()
         # print(self.game_status)
-        if key_input[pygame.K_e] and not self.game_status=='edit':
-            self.game_status='edit'
-            pygame.time.delay(100)
-        elif key_input[pygame.K_e] and self.game_status=='edit':
-            self.game_status='playing'
-            pygame.time.delay(100)
+        # if key_input[pygame.K_e] and not self.game_status=='edit':
+        #     self.game_status='edit'
+        #     pygame.time.delay(100)
+        # elif key_input[pygame.K_e] and self.game_status=='edit':
+        #     self.game_status='playing'
+        #     pygame.time.delay(100)
         if key_input[pygame.K_RIGHT] and not key_input[pygame.K_DOWN]:
             self.flip=True
             self.dx=1

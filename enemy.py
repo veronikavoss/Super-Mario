@@ -63,6 +63,12 @@ class Enemy(pygame.sprite.Sprite):
                 elif self.dx*self.move_speed>0:
                     self.move_speed*=-1
                     self.rect.right=tile.rect.left
+            # if tile.rect.collidepoint(self.rect.bottomright):
+            #     # self.move_speed*=-1
+            #     print('r')
+            # if tile.rect.collidepoint(self.rect.bottomleft):
+            #     # self.move_speed*=-1
+            #     print('l')
         
         self.set_gravity()
         
